@@ -36,13 +36,15 @@ explicitly along with the rest of the data describing each action.
 
 The minimum you need to do is extend `Game` with an `updateState` function:
 
-  class AddingGame extends Game {
-      static updateState(state, number) {
-          state.total += number
-      }
-  }
+```javascript
+class AddingGame extends Game {
+    static updateState(state, number) {
+        state.total += number
+    }
+}
 
-  AddingGame.nextState({ number: 0 }, 5) // returns { number: 5 }
+AddingGame.nextState({ number: 0 }, 5) // returns { number: 5 }
+```
 
 `board-state` uses [immer](https://github.com/immerjs/immer) to allow you to mutate the state in `updateState` but ensure that a new
 object is actually returned from `nextState`.
