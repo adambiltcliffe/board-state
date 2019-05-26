@@ -15,8 +15,8 @@
   "author": "Adam Biltcliffe",
   "license": "ISC",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/adambiltcliffe/board-state.git"
+    "type": "git",
+    "url": "https://github.com/adambiltcliffe/board-state.git"
   },
   "dependencies": {
     "immer": "^3.1.2"
