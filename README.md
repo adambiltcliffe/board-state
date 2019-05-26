@@ -16,17 +16,17 @@ themselves that another player's action is legal, even if that player has access
 Therefore, during the resolution of an action, the only 'magic' needed is the ability to reveal hidden
 information to whatever extent is needed to know what happens next.
 
-Game states and actions in `boardgamelib` are plain JSON-serializable Javascript objects, in order
+Game states and actions in `board-state` are plain JSON-serializable Javascript objects, in order
 to facilitate storing them in a database or sending them over a websocket or HTTP transport as
 simply as possible.
 
 ## Exclusions
 
-`boardgamelib` has no opinions on the validation of game actions. It is assumed that any action you
+`board-state` has no opinions on the validation of game actions. It is assumed that any action you
 pass to `nextState` has already been validated to ensure that it is legal (of course, adding an
 `isLegalAction` method to your `Game` subclass for your own use is perfectly possible).
 
-There is no built-in notion of turn order. If your game has a concept of the currently-acting player,
+There is no built-in notion of players or turn order. If your game has a concept of the currently-acting player,
 you can have your state model implicitly assume that any action passed to `nextState` is taken
 by the player whose turn it is (and enforce this elsewhere in your code). If more than one player
 could potentially take the next action at any given time, you can store the acting player
@@ -44,7 +44,7 @@ The minimum you need to do is extend `Game` with an `updateState` function:
 
   AddingGame.nextState({ number: 0 }, 5) // returns { number: 5 }
 
-`boardgamelib` uses `immer` to allow you to mutate the state in `updateState` but ensure that a new
+`board-state` uses `immer` to allow you to mutate the state in `updateState` but ensure that a new
 object is actually returned from `nextState`.
 
 If your game has no hidden information, this is all you need, although we're not really sure why you
