@@ -1,4 +1,4 @@
-boardgamelib - A library for state machines with hidden information
+`board-state` - A library for state machines with hidden information
 ===================================================================
 
 ## Purpose
