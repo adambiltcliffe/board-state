@@ -44,10 +44,13 @@ The minimum you need to do is extend `Game` with an `updateState` function:
 
   AddingGame.nextState({ number: 0 }, 5) // returns { number: 5 }
 
-`board-state` uses `immer` to allow you to mutate the state in `updateState` but ensure that a new
+`board-state` uses [immer][1] to allow you to mutate the state in `updateState` but ensure that a new
 object is actually returned from `nextState`.
+[1]: <https://github.com/immerjs/immer>
 
 If your game has no hidden information, this is all you need, although we're not really sure why you
 would need a third-party library in that case.
 
 ## Hiding information
+
+This is still to come ...
