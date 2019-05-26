@@ -1,0 +1,22 @@
+{
+  "name": "board-state",
+  "version": "0.1.0",
+  "description": "build turn-based board game state machines with hidden information",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Adam Biltcliffe",
+  "license": "ISC",
+  "dependencies": {
+    "immer": "^3.1.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "babel-jest": "^24.8.0",
+    "jest": "^24.8.0"
+  }
+}
