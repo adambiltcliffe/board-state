@@ -1,12 +1,12 @@
-import produce, { applyPatches } from "immer";
+import produce from "immer";
 import { JSON_delta } from "./vendor/json_delta";
+
+import deepcopy from 'deepcopy'
 
 class Game {
   static filter(state) {
     const filter = this.getFilters();
-    // We have to ensure that a new object is created for each filtered view
-    // otherwise Immer's state-sharing ends up causing incorrect results
-    return { ...produce(state, filter) };
+    return produce(state, filter);
   }
 
   static getFilters() {
@@ -73,11 +73,13 @@ class Game {
     }
   }
 
-  static _playApplyUpdate(state, transform) {
+  static _playApplyUpdate(draft, transform) {
     const filter = this.filter.bind(this);
-    const view = produce(state, filter);
-    transform(state);
-    const updatedView = produce(state, filter);
+    // Have to clone the previous state here as Immer will try to help out with
+    // structural sharing which breaks because this is really a mutable draft
+    const view = produce(deepcopy(draft), filter);
+    transform(draft);
+    const updatedView = produce(draft, filter);
     this._context.diffs.push(JSON_delta.diff(view, updatedView));
   }
 

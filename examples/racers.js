@@ -15,10 +15,14 @@ class Racers extends Game {
             return ({
                 player: 0,
                 pawns: [[0, 0], [0, 0]],
-                deck: [2,8,3,10,5,9,1,4,6,7]
+                deck: [2,3,1,10,5,9,8,4,6,7]
             })
         } else {
-            state.pawns[state.player][action] += 1
+            this.applyUpdate(state, fs => {
+              fs.revealedCard = fs.deck.shift()
+            })
+            const dist = state.revealedCard
+            state.pawns[state.player][action] += dist
             const newSpace = state.pawns[state.player][action]
             if (state.pawns[1-state.player][0] == newSpace) {
                 state.pawns[1-state.player][0] = 0
