@@ -24,11 +24,11 @@ is located in static methods which accept a state parameter, rather than in inst
 ## Exclusions
 
 `board-state` has no opinions on the validation of game actions. It is assumed that any action you
-pass to `nextState` has already been validated to ensure that it is legal (of course, adding an
+pass to `playAction` has already been validated to ensure that it is legal (of course, adding an
 `isLegalAction` method to your `Game` subclass for your own use is perfectly possible).
 
 There is no built-in notion of players or turn order. If your game has a concept of the currently-acting player,
-you can have your state model implicitly assume that any action passed to `nextState` is taken
+you can have your state model implicitly assume that any action passed to `playAction` is taken
 by the player whose turn it is (and enforce this elsewhere in your code). If more than one player
 could potentially take the next action at any given time, you can store the acting player
 explicitly along with the rest of the data describing each action.
@@ -53,7 +53,7 @@ const { state } = MontyHall.playAction(startState, { type: 'open', door: 1 })
 ```
 
 `board-state` uses [immer](https://github.com/immerjs/immer) to allow you to mutate the state in `updateState` but ensure that a new
-object is actually returned from `nextState`.
+object is actually returned from `playAction`.
 
 If you serialize the `startState` and `action` you can send them to the client and replay the game:
 
