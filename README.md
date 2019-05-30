@@ -37,21 +37,79 @@ explicitly along with the rest of the data describing each action.
 The minimum you need to do is extend `Game` with an `updateState` function:
 
 ```javascript
-class AddingGame extends Game {
-    static updateState(state, number) {
-        state.total += number
+const startState = { doors: {[1]: 'goat', [2]: 'goat', [3]: 'car' }}
+
+class MontyHall extends Game {
+    static updateState(state, action) {
+        if (action.type == 'open') {
+          state.prize = doors[action.door]
+        }
     }
 }
 
-AddingGame.nextState({ number: 0 }, 5) // returns { number: 5 }
+MontyHall.playAction(startState, { type: 'open', door: 1 })
+// returns { doors: {[1]: 'goat', [2]: 'goat', [3]: 'car' }, prize: 'goat' }
 ```
 
 `board-state` uses [immer](https://github.com/immerjs/immer) to allow you to mutate the state in `updateState` but ensure that a new
 object is actually returned from `nextState`.
+
+If you serialize the `startState` and `action` you can send them to the client and replay the game:
+
+```javascript
+MontyHall.replayAction(startState, { type: 'open', door: 1 })
+// returns { doors: {[1]: 'goat', [2]: 'goat', [3]: 'car' }, prize: 'goat' }
+```
 
 If your game has no hidden information, this is all you need, although we're not really sure why you
 would need a third-party library in that case.
 
 ## Hiding information
 
-This is still to come ...
+If we send the `startState` above to the client then the client can inspect it and find out which door hides
+the prize, which is undesirable. We can define a function to filter out secret information from the state:
+
+```javascript
+// in our MontyHall class
+static getFilters() {
+  return (state) => {
+    delete state.doors
+  }
+}
+
+// later
+const clientView = MontyHall.filter(startState) // returns {}
+```
+
+However, this will throw when we try to take an action, because clients can no longer verify that the
+value of `prize` was set correctly based on publicly-available information:
+
+```javascript
+MontyHall.playAction(startState, { type: 'open', door: 1 }) // throws an error
+```
+
+We need to publically reveal what was behind the door when it's opened. However, this takes place in
+the middle of resolving the action, so we need to ask for the door to be opened and then carry on:
+
+```javascript
+const startState = { doors: { [1]: 'goat', [2]: 'goat', [3]: 'car' }, openDoors: {} }
+
+class MontyHall extends Game {
+    static updateState(state, action) {
+        if (action.type == 'open') {
+          this.applyUpdate(state, fullState => {
+            fullState.openDoors[action.door] = fullState.doors[action.door]
+          })
+          state.prize = state.doors[action.door]
+        }
+    }
+    static getFilters() {
+      return (state) => {
+        delete state.doors
+      }
+    }
+}
+
+MontyHall.playAction(startState, { type: 'open', door: 1 })
+// returns { openDoors: { 1: 'goat' }, prize: 'goat' }
+```

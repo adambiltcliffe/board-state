@@ -1,20 +1,21 @@
 import Racers from './racers'
 
 test('Start state has pawns on square 0', () => {
-    const s0 = Racers.nextState({}, 'start')
+    const { state: s0 } = Racers.playAction({}, 'start')
     expect(s0.pawns).toEqual([[0,0],[0,0]])
 })
 
 test('Moving a pawn works correctly and advances the turn', () => {
-    const s0 = Racers.nextState({}, 'start')
-    const s1 = Racers.nextState(s0, 0)
+    const { state: s0 } = Racers.playAction({}, 'start')
+    expect(s0).toHaveProperty('deck')
+    const { state: s1 } = Racers.playAction(s0, 0)
     expect(s1.pawns).toEqual([[1,0],[0,0]])
     expect(s1.player).toEqual(1)
 })
 
 test('Pawn captures send opponent back to start', () => {
-    const s0 = Racers.nextState({}, 'start')
-    const s1 = Racers.nextState(s0, 0)
-    const s2 = Racers.nextState(s1, 1)
+    const { state: s0 } = Racers.playAction({}, 'start')
+    const { state: s1 } = Racers.playAction(s0, 0)
+    const { state: s2 } = Racers.playAction(s1, 1)
     expect(s2.pawns).toEqual([[0,0],[0,1]])
 })

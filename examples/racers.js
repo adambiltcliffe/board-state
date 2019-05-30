@@ -29,10 +29,6 @@ class Racers extends Game {
             state.player = 1-state.player
         }
     }
-
-    static getFilters() {
-      return (_hidden) => ({})
-    }
 }
 
 export default Racers
