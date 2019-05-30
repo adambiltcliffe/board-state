@@ -135,3 +135,24 @@ const clientView = MontyHall.filter(startState)
 const newClientView = MontyHall.replayAction(clientView, { type: 'open', door: 1 }, newInfo)
 // newClientView = { openDoors: { 1: 'goat' }, prize: 'goat' }
 ```
+
+You can (and should) use the same method to ensure that any random result of a game action is
+correctly replicated on the client:
+
+```javascript
+// Will not work
+class BadRandomGame extends Game {
+  static updateState(state, _) {
+    state.randomNumber = Math.random()
+  }
+}
+
+// Will work
+class GoodRandomGame extends Game {
+  static updateState(state, _) {
+    this.applyUpdate(state, fs => {
+      fs.randomNumber = Math.random()
+    })
+  }
+}
+```

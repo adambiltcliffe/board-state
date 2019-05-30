@@ -100,3 +100,23 @@ test("Correct information-hiding example from the docs works as advertised", () 
     ]
   `);
 });
+
+test("Example of how not to do randomness fails", () => {
+  class BadRandomGame extends Game {
+    static updateState(state, _) {
+      state.randomNumber = Math.random()
+    }
+  }
+  expect(() => BadRandomGame.playAction({}, {})).toThrow()
+})
+
+test("Example of how to do randomness succeeds", () => {
+  class GoodRandomGame extends Game {
+    static updateState(state, _) {
+      this.applyUpdate(state, fs => {
+        fs.randomNumber = Math.random()
+      })
+    }
+  }
+  expect(() => GoodRandomGame.playAction({}, {})).not.toThrow()
+})
