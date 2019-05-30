@@ -18,7 +18,8 @@ information to whatever extent is needed to know what happens next.
 
 Game states and actions in `board-state` are plain JSON-serializable Javascript objects, in order
 to facilitate storing them in a database or sending them over a websocket or HTTP transport as
-simply as possible.
+simply as possible. Classes are used to collect the logic for a particular game together, but logic
+is located in static methods which accept a state parameter, rather than in instance methods.
 
 ## Exclusions
 
@@ -47,8 +48,8 @@ class MontyHall extends Game {
     }
 }
 
-MontyHall.playAction(startState, { type: 'open', door: 1 })
-// returns { doors: {[1]: 'goat', [2]: 'goat', [3]: 'car' }, prize: 'goat' }
+const { state } = MontyHall.playAction(startState, { type: 'open', door: 1 })
+// state = { doors: {[1]: 'goat', [2]: 'goat', [3]: 'car' }, prize: 'goat' }
 ```
 
 `board-state` uses [immer](https://github.com/immerjs/immer) to allow you to mutate the state in `updateState` but ensure that a new
@@ -57,9 +58,12 @@ object is actually returned from `nextState`.
 If you serialize the `startState` and `action` you can send them to the client and replay the game:
 
 ```javascript
-MontyHall.replayAction(startState, { type: 'open', door: 1 })
-// returns { doors: {[1]: 'goat', [2]: 'goat', [3]: 'car' }, prize: 'goat' }
+const view = MontyHall.replayAction(startState, { type: 'open', door: 1 })
+// view = { doors: {[1]: 'goat', [2]: 'goat', [3]: 'car' }, prize: 'goat' }
 ```
+
+Note that `playAction` returns an object with a `state` property whereas `replayAction` returns the state directly.
+We will see the reason for this shortly.
 
 If your game has no hidden information, this is all you need, although we're not really sure why you
 would need a third-party library in that case.
@@ -85,8 +89,13 @@ However, this will throw when we try to take an action, because clients can no l
 value of `prize` was set correctly based on publicly-available information:
 
 ```javascript
-MontyHall.playAction(startState, { type: 'open', door: 1 }) // throws an error
+const { state } = MontyHall.playAction(startState, { type: 'open', door: 1 }) // throws an error
 ```
+
+(Note: `playAction` checks that the action can be correctly played back on the client without access to
+private state. This check is disabled if `process.env.NODE_ENV` is set to `"production"`, in which case
+the above will not throw, but you will get an error later on when you try to replay the action on the
+client.)
 
 We need to publically reveal what was behind the door when it's opened. However, this takes place in
 the middle of resolving the action, so we need to ask for the door to be opened and then carry on:
@@ -100,7 +109,7 @@ class MontyHall extends Game {
           this.applyUpdate(state, fullState => {
             fullState.openDoors[action.door] = fullState.doors[action.door]
           })
-          state.prize = state.doors[action.door]
+          state.prize = state.openDoors[action.door]
         }
     }
     static getFilters() {
@@ -110,6 +119,19 @@ class MontyHall extends Game {
     }
 }
 
-MontyHall.playAction(startState, { type: 'open', door: 1 })
-// returns { openDoors: { 1: 'goat' }, prize: 'goat' }
+const { state, newInfo } = MontyHall.playAction(startState, { type: 'open', door: 1 })
+// state = {...startState, openDoors: { 1: 'goat' }, prize: 'goat' }
+```
+
+Note that after calling `applyUpdate` we read from the (now-public) property `openDoors` rather
+than from `doors` (which is still secret).
+
+The object returned by `playAction` has a second property `newInfo`, which encodes the secret
+information that was revealed in the course of resolving the action. You need to send this object
+(which does not contain any other secret state) to the client in order to pass it to `replayAction`:
+
+```javascript
+const clientView = MontyHall.filter(startState)
+const newClientView = MontyHall.replayAction(clientView, { type: 'open', door: 1 }, newInfo)
+// newClientView = { openDoors: { 1: 'goat' }, prize: 'goat' }
 ```
