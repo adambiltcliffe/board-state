@@ -3,6 +3,8 @@ import { JSON_delta } from "./vendor/json_delta";
 
 import deepcopy from 'deepcopy'
 
+const context = Symbol("context")
+
 class Game {
   static filter(state) {
     const filter = this.getFilters();
@@ -15,21 +17,21 @@ class Game {
   }
 
   static playAction(state, action) {
-    if (this._context !== undefined) {
+    if (this[context] !== undefined) {
       throw new Error(
         "Nested calls to playAction()/replayAction() are not supported"
       );
     }
     let view, newState, diffs;
     try {
-      this._context = { mode: "play", diffs: [] };
+      this[context] = { mode: "play", diffs: [] };
       view = this.filter(state);
       newState = produce(state, draft => {
         return this.updateState(draft, action);
       });
     } finally {
-      diffs = this._context.diffs;
-      this._context = undefined;
+      diffs = this[context].diffs;
+      this[context] = undefined;
     }
     if (process.env.NODE_ENV != "production") {
       // development or test
@@ -45,25 +47,25 @@ class Game {
   }
 
   static replayAction(state, action, diffs) {
-    if (this._context !== undefined) {
+    if (this[context] !== undefined) {
       throw new Error(
         "Nested calls to playAction()/replayAction() are not supported"
       );
     }
     let result;
     try {
-      this._context = { mode: "replay", diffs, diffIndex: 0 };
+      this[context] = { mode: "replay", diffs, diffIndex: 0 };
       result = produce(state, draft => {
         return this.updateState(draft, action);
       });
     } finally {
-      this._context = undefined;
+      this[context] = undefined;
     }
     return result;
   }
 
   static applyUpdate(state, transform) {
-    switch (this._context.mode) {
+    switch (this[context].mode) {
       case "play":
         this._playApplyUpdate(state, transform);
         break;
@@ -80,13 +82,13 @@ class Game {
     const view = produce(deepcopy(draft), filter);
     transform(draft);
     const updatedView = produce(draft, filter);
-    this._context.diffs.push(JSON_delta.diff(view, updatedView));
+    this[context].diffs.push(JSON_delta.diff(view, updatedView));
   }
 
   static _replayApplyUpdate(state, _transform) {
-    const diff = this._context.diffs[this._context.diffIndex];
+    const diff = this[context].diffs[this[context].diffIndex];
     JSON_delta.patch(state, diff);
-    this._context.diffIndex++;
+    this[context].diffIndex++;
   }
 }
 
