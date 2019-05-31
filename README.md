@@ -156,3 +156,74 @@ class GoodRandomGame extends Game {
   }
 }
 ```
+
+## Multiple perspectives
+
+Instead of returning a single filter function, `getFilters` can return an array of filter functions.
+The keys can be anything you like, but the obvious use case is for them to be player IDs of some sort.
+
+```javascript
+const startState = { total: 0, hands: { a: [2, 3, 7], b: [4, 5, 6] } };
+
+class CardPlayGame extends Game {
+  static getFilters() {
+    return {
+      a: s => { delete s.hands.b; },
+      b: s => { delete s.hands.a; }
+    };
+  }
+  static updateState(state, action) {
+    this.applyUpdate(state, fs => {
+      const pos = fs.hands[action.player].indexOf(action.value);
+      fs.hands[action.player].splice(pos, 1);
+    });
+    state.total += action.value;
+  }
+}
+
+const action = { player: "a", value: 3 };
+const { state: newState, newInfos } = CardPlayGame.playAction(startState, action);
+// newState = { total: 3, hands: { a: [2, 7], b: [4, 5, 6] } }
+
+const aStartView = CardPlayGame.filter(startState, "a");
+const aNewView = CardPlayGame.replayAction(aStartView, action, newInfos.a);
+// aNewView = { total: 3, hands: { a: [2, 7] } }
+
+const bStartView = CardPlayGame.filter(startState, "b");
+const bNewView = CardPlayGame.replayAction(bStartView, action, newInfos.b);
+// bNewView = { total: 3, hands: { b: [4, 5, 6] } }
+```
+
+`getFilters` can receive the state as an argument in case you want to extract any information from
+it such as a list of player IDs. You can also produce derived state in a filter that doesn't exist in
+the real state, for example to reveal the number of cards in an opponent's hand without showing their
+actual values:
+
+```javascript
+const startState = { total: 10, hands: { a: [2, 3, 7], b: [4, 5, 6], c: [9, 10] } };
+
+class CardPlayGame extends Game {
+  static getFilters(state) {
+    const filters = {}
+    for (let playerID in state.hands) {
+      filters[playerID] = s => {
+        s.handCounts = {}
+        for (let p in s.hands) {
+          s.handCounts[p] = s.hands[p].length
+        }
+        s.hands = { [playerID]: s.hands[playerID] }
+      }
+    }
+    return filters
+  }
+  // updateState defined as before
+}
+
+const action = { player: "a", value: 3 };
+const { state: newState, newInfos } = CardPlayGame.playAction(startState, action);
+// newState = { total: 13, hands: { a: [2, 7], b: [4, 5, 6], c: [9, 10] } }
+
+const bStartView = CardPlayGame.filter(startState, "b");
+const bNewView = CardPlayGame.replayAction(bStartView, action, newInfos.b);
+// bNewView = { total: 13, hands: { b: [4, 5, 6] }, handCounts: { a: 2, b: 3, c: 2} }
+```
