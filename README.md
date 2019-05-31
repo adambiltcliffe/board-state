@@ -86,7 +86,7 @@ const clientView = MontyHall.filter(startState) // returns {}
 ```
 
 However, this will throw when we try to take an action, because clients can no longer verify that the
-value of `prize` was set correctly based on publicly-available information:
+value of `prize` was set correctly based on publically-available information:
 
 ```javascript
 const { state } = MontyHall.playAction(startState, { type: 'open', door: 1 }) // throws an error
@@ -193,6 +193,8 @@ const bStartView = CardPlayGame.filter(startState, "b");
 const bNewView = CardPlayGame.replayAction(bStartView, action, newInfos.b);
 // bNewView = { total: 3, hands: { b: [4, 5, 6] } }
 ```
+
+Note that the object returned by `playAction` in this case has property `newInfos` rather than `newInfo`.
 
 `getFilters` can receive the state as an argument in case you want to extract any information from
 it such as a list of player IDs. You can also produce derived state in a filter that doesn't exist in
