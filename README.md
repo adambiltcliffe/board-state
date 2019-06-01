@@ -229,3 +229,7 @@ const bStartView = CardPlayGame.filter(startState, "b");
 const bNewView = CardPlayGame.replayAction(bStartView, action, newInfos.b);
 // bNewView = { total: 13, hands: { b: [4, 5, 6] }, handCounts: { a: 2, b: 3, c: 2} }
 ```
+
+If you create an additional no-op filter called `server` or similar which can see the
+whole state, you can save the results and use `replayAction` on the server in order to
+reconstruct the whole history if needed.

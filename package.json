@@ -1,6 +1,6 @@
 {
   "name": "board-state",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "build turn-based board game state machines with hidden information",
   "keywords": [
     "boardgames"
@@ -9,6 +9,10 @@
   "directories": {
     "example": "examples"
   },
+  "files": [
+    "/game.js",
+    "/vendor"
+  ],
   "scripts": {
     "test": "jest"
   },
