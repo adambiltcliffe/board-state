@@ -1,33 +1,33 @@
 import produce from "immer";
 import { JSON_delta } from "./vendor/json_delta";
 
-import deepcopy from 'deepcopy'
+import deepcopy from "deepcopy";
 
-const context = Symbol("context")
+const context = Symbol("context");
 
 class Game {
   static setupFilters(state) {
     const filters = this.getFilters(state);
     let f;
-    if (typeof(filters) == 'function') {
-      f = {'default': filters}
-      this[context].filterMode = 'single'
+    if (typeof filters == "function") {
+      f = { default: filters };
+      this[context].filterMode = "single";
     } else {
-      f = filters
-      this[context].filterMode = 'multi'
+      f = filters;
+      this[context].filterMode = "multi";
     }
-    this[context].filters = {}
+    this[context].filters = {};
     for (let filterKey in f) {
-      this[context].filters[filterKey] = produce(f[filterKey])
+      this[context].filters[filterKey] = produce(f[filterKey]);
     }
   }
 
   static filter(state, filterKey) {
     const filters = this.getFilters(state);
-    if (typeof(filters) == 'function') {
-      return produce(state, filters)
+    if (typeof filters == "function") {
+      return produce(state, filters);
     } else {
-      return produce(state, filters[filterKey])
+      return produce(state, filters[filterKey]);
     }
   }
 
@@ -42,26 +42,35 @@ class Game {
         "Nested calls to playAction()/replayAction() are not supported"
       );
     }
-    let views = {}, newState, oldContext;
+    let views = {},
+      newState,
+      oldContext;
     try {
       this[context] = { mode: "play", diffs: {} };
-      this.setupFilters(state)
+      this.setupFilters(state);
       for (let filterKey in this[context].filters) {
-        views[filterKey] = this[context].filters[filterKey](state)
-        this[context].diffs[filterKey] = []
+        views[filterKey] = this[context].filters[filterKey](state);
+        this[context].diffs[filterKey] = [];
       }
       newState = produce(state, draft => {
         return this.updateState(draft, action);
       });
     } finally {
-      oldContext = this[context]
+      oldContext = this[context];
       this[context] = undefined;
     }
     if (process.env.NODE_ENV != "production") {
       // development or test
       for (let filterKey in oldContext.filters) {
-        const replayResult = this.replayAction(views[filterKey], action, oldContext.diffs[filterKey]);
-        const diff = JSON_delta.diff(replayResult, oldContext.filters[filterKey](newState));
+        const replayResult = this.replayAction(
+          views[filterKey],
+          action,
+          oldContext.diffs[filterKey]
+        );
+        const diff = JSON_delta.diff(
+          replayResult,
+          oldContext.filters[filterKey](newState)
+        );
         if (diff.length != 0) {
           throw new Error(
             "Result of replaying the action did not match the new state"
@@ -69,9 +78,9 @@ class Game {
         }
       }
     }
-    if (oldContext.filterMode == 'single') {
-      const newInfo = oldContext.diffs['default']
-      return { state: newState, newInfo}
+    if (oldContext.filterMode == "single") {
+      const newInfo = oldContext.diffs["default"];
+      return { state: newState, newInfo };
     } else {
       return { state: newState, newInfos: oldContext.diffs };
     }
@@ -109,16 +118,21 @@ class Game {
   static _playApplyUpdate(draft, transform) {
     // Have to clone the previous state here as Immer will try to help out with
     // structural sharing which breaks because this is really a mutable draft
-    const original = deepcopy(draft)
-    const views = {}
+    const original = deepcopy(draft);
+    const views = {};
     for (let filterKey in this[context].filters) {
       views[filterKey] = produce(original, this[context].filters[filterKey]);
     }
     transform(draft);
-    const updatedViews = {}
+    const updatedViews = {};
     for (let filterKey in this[context].filters) {
-      updatedViews[filterKey] = produce(draft, this[context].filters[filterKey]);
-      this[context].diffs[filterKey].push(JSON_delta.diff(views[filterKey], updatedViews[filterKey]));
+      updatedViews[filterKey] = produce(
+        draft,
+        this[context].filters[filterKey]
+      );
+      this[context].diffs[filterKey].push(
+        JSON_delta.diff(views[filterKey], updatedViews[filterKey])
+      );
     }
   }
 
