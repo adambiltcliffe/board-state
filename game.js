@@ -131,7 +131,8 @@ class Game {
         this[context].filters[filterKey]
       );
       this[context].diffs[filterKey].push(
-        JSON_delta.diff(views[filterKey], updatedViews[filterKey])
+        // Have to deepcopy here as otherwise proxy elements end up in the diff
+        deepcopy(JSON_delta.diff(views[filterKey], updatedViews[filterKey]))
       );
     }
   }
