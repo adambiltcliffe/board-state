@@ -7,7 +7,7 @@ test("If getFilters() is not overridden, filter() returns the input unchanged", 
   expect(Game.filter(before)).toEqual(before);
 });
 
-test("Complicated test to track down immer issue", () => {
+test("Avoid immer issue where diff contains a revoked proxy", () => {
   class CardPlayGame extends Game {
     static updateState(state, action) {
       this.applyUpdate(state, fs => {
@@ -20,4 +20,26 @@ test("Complicated test to track down immer issue", () => {
   const { state: s2 } = CardPlayGame.playAction(s1, { player: "c", value: 9 });
   expect(s2).toEqual({ hands: { c: [10] } });
   const { state: s3 } = CardPlayGame.playAction(s2, { player: "c", value: 10 });
+  expect(s3).toEqual({ hands: { c: [] } });
+});
+
+test("Fix bug with unnecessary info in diff for some reason", () => {
+  class TestGame extends Game {
+    static updateState(state, action) {
+      this.applyUpdate(state, fs => {
+        fs.info = { foo: 1, secret: 2 };
+      });
+      state.info.public = 3;
+    }
+    static getFilters() {
+      return s => {
+        if (s.info) {
+          delete s.info.secret;
+        }
+      };
+    }
+  }
+  const { state, newInfo } = TestGame.playAction({}, {});
+  expect(state).toEqual({ info: { foo: 1, secret: 2, public: 3 } });
+  expect(newInfo).toEqual([[[["info"], { foo: 1 }]]]);
 });
