@@ -23,7 +23,7 @@ test("Avoid immer issue where diff contains a revoked proxy", () => {
   expect(s3).toEqual({ hands: { c: [] } });
 });
 
-test("Fix bug with unnecessary info in diff for some reason", () => {
+test("Ensure that modifying the state doesn't also modify diffs that were previously applied", () => {
   class TestGame extends Game {
     static updateState(state, action) {
       this.applyUpdate(state, fs => {

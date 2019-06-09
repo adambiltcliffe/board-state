@@ -130,15 +130,19 @@ class Game {
         draft,
         this[context].filters[filterKey]
       );
-      this[context].diffs[filterKey].push(
-        // Have to deepcopy here as otherwise proxy elements end up in the diff
-        deepcopy(JSON_delta.diff(views[filterKey], updatedViews[filterKey]))
+      // We deepcopy the diff here to ensure that it contains references
+      // only to plain objects and not proxies
+      const diff = deepcopy(
+        JSON_delta.diff(views[filterKey], updatedViews[filterKey])
       );
+      this[context].diffs[filterKey].push(diff);
     }
   }
 
   static _replayApplyUpdate(state, _transform) {
-    const diff = this[context].diffs[this[context].diffIndex];
+    // We also have to clone the diff we are applying, because otherwise
+    // modifying the state later on can also modify the original diff!
+    const diff = deepcopy(this[context].diffs[this[context].diffIndex]);
     JSON_delta.patch(state, diff);
     this[context].diffIndex++;
   }
