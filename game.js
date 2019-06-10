@@ -67,14 +67,16 @@ class Game {
           action,
           oldContext.diffs[filterKey]
         );
-        const diff = JSON_delta.diff(
-          replayResult,
-          oldContext.filters[filterKey](newState)
-        );
+        const filteredNewState = oldContext.filters[filterKey](newState);
+        const diff = JSON_delta.diff(replayResult, filteredNewState);
         if (diff.length != 0) {
-          throw new Error(
+          const error = new Error(
             "Result of replaying the action did not match the new state"
           );
+          error.result = filteredNewState;
+          error.replay = replayResult;
+          error.diff = diff;
+          throw error;
         }
       }
     }
