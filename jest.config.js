@@ -11,9 +11,6 @@ module.exports = {
   // Respect "browser" field in package.json when resolving modules
   // browser: false,
 
-  // The directory where Jest should store its cached dependency information
-  // cacheDirectory: "C:\\Users\\adamb_000\\AppData\\Local\\Temp\\jest",
-
   // Automatically clear mock calls and instances between every test
   // clearMocks: false,
 
@@ -166,7 +163,7 @@ module.exports = {
   // A map from regular expressions to paths to transformers
   transform: {
     "^.+\\.jsx?$": "babel-jest"
-  },
+  }
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [

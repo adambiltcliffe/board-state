@@ -1,3 +1,49 @@
 {
-    "presets": ["@babel/preset-env"]
+  "env": {
+    "test": {
+      "presets": ["@babel/preset-env"]
+    },
+    "development": {
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": {
+              "node": "10.15"
+            }
+          }
+        ]
+      ],
+      "plugins": []
+    },
+    "browser": {
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": {
+              "browsers": "last 2 versions, ie 10-11"
+            },
+            "modules": false
+          }
+        ]
+      ],
+      "plugins": []
+    },
+    "module": {
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": {
+              "node": "10.15"
+            },
+            "modules": false
+          }
+        ]
+      ],
+      "plugins": []
+    }
+  },
+  "sourceMaps": true
 }

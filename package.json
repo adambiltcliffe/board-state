@@ -5,15 +5,22 @@
   "keywords": [
     "boardgames"
   ],
-  "main": "game.js",
+  "main": "./dist/main/game.js",
+  "browser": "./dist/browser/game.js",
+  "module": "./dist/module/game.js",
   "directories": {
     "example": "examples"
   },
   "files": [
-    "/game.js",
+    "/dist",
     "/vendor"
   ],
   "scripts": {
+    "build-browser": "cross-env BABEL_ENV=browser babel ./game.js ./vendor-json-delta.js --out-dir ./dist/browser/ --source-maps",
+    "build-module": "cross-env BABEL_ENV=module babel ./game.js ./vendor-json-delta.js --out-dir ./dist/module --source-maps",
+    "build-node": "babel ./game.js ./vendor-json-delta.js --out-dir ./dist/main --source-maps",
+    "build": "npm run clean && npm run build-node && npm run build-browser && npm run build-module",
+    "clean": "shx rm -rf dist",
     "test": "jest"
   },
   "author": "Adam Biltcliffe",
@@ -27,10 +34,13 @@
     "immer": "^3.1.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.6.0",
     "@babel/core": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
     "babel-jest": "^24.8.0",
+    "cross-env": "^5.2.1",
     "jest": "^24.8.0",
-    "prettier": "^1.17.1"
+    "prettier": "^1.17.1",
+    "shx": "^0.3.2"
   }
 }
