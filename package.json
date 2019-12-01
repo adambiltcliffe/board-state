@@ -21,6 +21,7 @@
     "build-node": "babel ./game.js ./vendor-json-delta.js --out-dir ./dist/main --source-maps",
     "build": "npm run clean && npm run build-node && npm run build-browser && npm run build-module",
     "clean": "shx rm -rf dist",
+    "prepare": "npm run build",
     "test": "jest"
   },
   "author": "Adam Biltcliffe",
