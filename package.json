@@ -32,16 +32,16 @@
   },
   "dependencies": {
     "deepcopy": "^2.0.0",
-    "immer": "^3.1.2"
+    "immer": "^3.3.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.6.0",
-    "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
-    "babel-jest": "^24.8.0",
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
+    "babel-jest": "^24.9.0",
     "cross-env": "^5.2.1",
-    "jest": "^24.8.0",
-    "prettier": "^1.17.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1",
     "shx": "^0.3.2"
   }
 }
