@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "deepcopy": "^2.0.0",
-    "immer": "^3.3.0"
+    "immer": "^9.0.6"
   },
   "devDependencies": {
     "@babel/cli": "^7.7.7",
